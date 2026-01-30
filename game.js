@@ -2,6 +2,14 @@
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
 
+  // MODE_BADGE
+  const badge = document.getElementById('modeBadge');
+  if (badge){
+    if (MARATHON_MODE) badge.textContent = 'Maratón';
+    else if (FULL_WIN_MODE) badge.textContent = 'Demo';
+    else badge.textContent = '';
+  }
+
   const scoreEl = document.getElementById('score');
   const bestEl = document.getElementById('best');
   const overlay = document.getElementById('overlay');
