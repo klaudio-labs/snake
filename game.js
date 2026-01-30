@@ -78,7 +78,7 @@
   function reset(){
     score = 0;
     tickMs = MARATHON_MODE ? 140 : 110;
-    if (SPEED) tickMs = Math.max(10, SPEED);
+    if (SPEED) tickMs = Math.max(1, SPEED);
     running = false;
     paused = false;
     lastTick = 0;
