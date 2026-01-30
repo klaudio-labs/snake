@@ -21,6 +21,8 @@
   const params = new URLSearchParams(location.search);
   const MARATHON_MODE = params.get('marathon') === '1';
   const FULL_WIN_MODE = params.get('full') === '1';
+  const AUTO_SOLVER_MODE = params.get('ai') === '1';
+  const SPEED = Number(params.get('speed') || '') || null;
 
 
   const COLORS = {
@@ -42,6 +44,28 @@
     try { localStorage.setItem('snake_best', String(v)); } catch {}
   }
 
+  function buildHamiltonianNext(){
+    // AUTO_SOLVER_MODE: serpentine Hamiltonian cycle for even GRID.
+    const next = new Map();
+    const idx = (x,y) => `${x},${y}`;
+    const path = [];
+    for (let y=0; y<GRID; y++){
+      if (y%2===0){
+        for (let x=0; x<GRID; x++) path.push({x,y});
+      } else {
+        for (let x=GRID-1; x>=0; x--) path.push({x,y});
+      }
+    }
+    for (let i=0;i<path.length;i++){
+      const a = path[i];
+      const b = path[(i+1)%path.length];
+      next.set(idx(a.x,a.y), b);
+    }
+    return next;
+  }
+
+  const HAM_NEXT = buildHamiltonianNext();
+
   function randCell(excludeSet){
     while (true){
       const x = Math.floor(Math.random() * GRID);
@@ -54,6 +78,7 @@
   function reset(){
     score = 0;
     tickMs = MARATHON_MODE ? 140 : 110;
+    if (SPEED) tickMs = Math.max(10, SPEED);
     running = false;
     paused = false;
     lastTick = 0;
@@ -321,7 +346,7 @@
   if (FULL_WIN_MODE) {
     fillBoardWin();
   } else {
-    showOverlay(MARATHON_MODE ? 'Snake (Maratón)' : 'Snake', 'Jugar');
+    showOverlay(AUTO_SOLVER_MODE ? (MARATHON_MODE ? 'Snake (Maratón + IA)' : 'Snake (IA)') : (MARATHON_MODE ? 'Snake (Maratón)' : 'Snake'), 'Jugar');
   }
   requestAnimationFrame(loop);
 })();
