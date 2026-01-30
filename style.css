@@ -96,3 +96,14 @@ canvas#game{
 @media (min-height: 760px){
   .wrap{gap:16px}
 }
+
+
+.badge{
+  margin-left:10px;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:12px;
+  color: rgba(232,238,247,0.9);
+  border:1px solid rgba(255,255,255,0.12);
+  background: rgba(16,24,38,0.55);
+}
