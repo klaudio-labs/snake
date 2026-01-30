@@ -10,6 +10,11 @@
   const GRID = 18; // 18x18
   const CELL = canvas.width / GRID;
 
+  const params = new URLSearchParams(location.search);
+  const MARATHON_MODE = params.get('marathon') === '1';
+  const FULL_WIN_MODE = params.get('full') === '1';
+
+
   const COLORS = {
     bg: '#0e1726',
     grid: 'rgba(255,255,255,0.06)',
@@ -19,7 +24,7 @@
     text: 'rgba(232,238,247,0.85)'
   };
 
-  let snake, dir, nextDir, food, score, best, running, tickMs, lastTick;
+  let snake, dir, nextDir, food, score, best, running, paused, tickMs, lastTick;
 
   function loadBest(){
     try { return Number(localStorage.getItem('snake_best') || 0) || 0; }
@@ -40,8 +45,9 @@
 
   function reset(){
     score = 0;
-    tickMs = 110;
+    tickMs = MARATHON_MODE ? 140 : 110;
     running = false;
+    paused = false;
     lastTick = 0;
 
     dir = {x: 1, y: 0};
@@ -74,7 +80,7 @@
 
   function setDir(d){
     // Prevent reversing directly
-    if (running){
+    if (running && !paused){
       if (d.x === -dir.x && d.y === -dir.y) return;
     }
     nextDir = d;
@@ -107,8 +113,8 @@
       scoreEl.textContent = String(score);
       if (score > best){ best = score; bestEl.textContent = String(best); saveBest(best); }
 
-      // slightly speed up every 5 points
-      if (score % 5 === 0) tickMs = Math.max(70, tickMs - 6);
+      // slightly speed up every 5 points (disabled in marathon)
+      if (!MARATHON_MODE && score % 5 === 0) tickMs = Math.max(70, tickMs - 6);
 
       const occ = new Set(snake.map(p => `${p.x},${p.y}`));
       food = randCell(occ);
@@ -172,6 +178,11 @@
       ctx.font = 'bold 14px system-ui, -apple-system, Segoe UI, Roboto';
       ctx.textAlign = 'center';
       ctx.fillText('Pulsa Jugar o desliza para empezar', canvas.width/2, canvas.height - 14);
+    } else if (paused){
+      ctx.fillStyle = COLORS.text;
+      ctx.font = 'bold 16px system-ui, -apple-system, Segoe UI, Roboto';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSA', canvas.width/2, 26);
     }
   }
 
@@ -196,10 +207,18 @@
     if (k === 'arrowleft' || k === 'a') setDir({x:-1,y:0});
     if (k === 'arrowright' || k === 'd') setDir({x:1,y:0});
 
-    if (k === ' '){
+    if (k === ' ') {
       if (!running){
         hideOverlay();
         running = true;
+        paused = false;
+        lastTick = 0;
+      }
+    }
+
+    if (k === 'p'){
+      if (running){
+        paused = !paused;
         lastTick = 0;
       }
     }
@@ -227,6 +246,14 @@
     const t = e.changedTouches[0];
     touchStart = {x: t.clientX, y: t.clientY};
   }, {passive:true});
+  // two-finger tap to toggle pause
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length === 2 && running){
+      paused = !paused;
+      lastTick = 0;
+    }
+  }, {passive:true});
+
 
   canvas.addEventListener('touchend', (e) => {
     if (!touchStart) return;
@@ -255,6 +282,7 @@
     reset();
     hideOverlay();
     running = true;
+    paused = false;
     lastTick = 0;
   });
 
@@ -282,10 +310,10 @@
 
   // Init
   reset();
-  if (new URLSearchParams(location.search).get('full') === '1') {
+  if (FULL_WIN_MODE) {
     fillBoardWin();
   } else {
-    showOverlay('Snake', 'Jugar');
+    showOverlay(MARATHON_MODE ? 'Snake (Maratón)' : 'Snake', 'Jugar');
   }
   requestAnimationFrame(loop);
 })();
