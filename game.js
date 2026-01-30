@@ -5,8 +5,10 @@
   // MODE_BADGE
   const badge = document.getElementById('modeBadge');
   if (badge){
-    if (MARATHON_MODE) badge.textContent = 'Maratón';
-    else if (FULL_WIN_MODE) badge.textContent = 'Demo';
+    const p = new URLSearchParams(location.search);
+    if (p.get('ai') === '1') badge.textContent = 'IA';
+    else if (p.get('marathon') === '1') badge.textContent = 'Maratón';
+    else if (p.get('full') === '1') badge.textContent = 'Demo';
     else badge.textContent = '';
   }
 
