@@ -258,8 +258,34 @@
     lastTick = 0;
   });
 
+  
+  // FULL_WIN_MODE: if URL has ?full=1, fill the board (for demo/screenshot)
+  function fillBoardWin(){
+    // Build a full snake path (serpentine)
+    const cells = [];
+    for (let y = 0; y < GRID; y++){
+      if (y % 2 === 0){
+        for (let x = 0; x < GRID; x++) cells.push({x,y});
+      } else {
+        for (let x = GRID-1; x >= 0; x--) cells.push({x,y});
+      }
+    }
+    snake = cells;
+    running = false;
+    score = GRID*GRID - 1;
+    scoreEl.textContent = String(score);
+    if (score > best){ best = score; bestEl.textContent = String(best); saveBest(best); }
+    // Place food off-board
+    food = {x:-1,y:-1};
+    showOverlay('¡Victoria!', 'Reiniciar');
+  }
+
   // Init
   reset();
-  showOverlay('Snake', 'Jugar');
+  if (new URLSearchParams(location.search).get('full') === '1') {
+    fillBoardWin();
+  } else {
+    showOverlay('Snake', 'Jugar');
+  }
   requestAnimationFrame(loop);
 })();
